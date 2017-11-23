@@ -20,10 +20,15 @@ int main(int argc, char *argv[])
   // File type	
   int isfq=fasttype(argv[1]);
 
+
+  string myname="scaffolds_lenghts.txt";
+  myfile.open(myname.c_str());
+
   if(!isfq)
      err=readfasta(argv[1]); // save info (contig names and length) in vectors
   else
      err=readfastq(argv[1]);
+  myfile.close();
 
   if(!err)calc();  
 

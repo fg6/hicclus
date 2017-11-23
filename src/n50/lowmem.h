@@ -21,6 +21,7 @@ static  vector<string> rqual;
 static  vector<string> rname;
 static  vector<string> rcomment;
 
+static std::ofstream myfile;
 
 // ---------------------------------------- //
 int fasttype(char* file)
@@ -109,6 +110,7 @@ int readfasta(char* file)
   rlen.reserve(100000);
  
   string read;
+  string old_name;
   int seqlen=0;
 
   int stop=1;
@@ -118,10 +120,14 @@ int readfasta(char* file)
     if(read.substr(0,1)==fa){  // name
       nseq++;
 
-      if(nseq>1) // previous
+      if(nseq>1) { // previous
 	rlen.push_back(seqlen);
+	myfile <<  old_name << " " << seqlen << endl;
+      }
+
       
       //reset
+      old_name=read;
       seqlen=0;
 
     }else{ // sequence 
@@ -131,6 +137,7 @@ int readfasta(char* file)
     // EOF
     if(infile.eof()){ // previous
       rlen.push_back(seqlen);
+      myfile <<  old_name << " " << seqlen << endl;
       stop=0;
     }
   }//read loop

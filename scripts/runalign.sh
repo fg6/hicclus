@@ -17,9 +17,10 @@ cd $wdir
 #################   PREPARE DRAFT    ##################
 #######################################################
 mkdir -p $draftdir
+cd $draftdir
 
 if [[ $aligner == "bwa" ]]; then	
-
+    
     already_there="Yes"
     if [[ ! -f  $draftdir/$(basename $mydraft).bwt ]] ; then
 	cd $draftdir
@@ -28,9 +29,9 @@ if [[ $aligner == "bwa" ]]; then
 
 	command=`$mybwa index $(basename $mydraft)`
 	if [[ $debug == 1 ]]; then
-	    echo $command
+	    $command
 	else
-	    echo $command &> /dev/null
+	    $command &> /dev/null
        fi
     fi
 
@@ -44,7 +45,7 @@ if [[ $aligner == "bwa" ]]; then
 fi
 
 already_there="Yes"
-if [[ ! -f $draftdir/myn50.dat ]] || [[ ! -s $draftdir/myn50.dat ]]; then
+if [[ ! -f $draftdir/myn50.dat ]] || [[ ! -s $draftdir/myn50.dat ]] || [[ ! -s $draftdir/scaffolds_lenghts.txt ]]; then
     $mysrcs/n50/n50 $mydraft > $draftdir/myn50.dat
     already_there="No"
 fi

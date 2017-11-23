@@ -9,6 +9,8 @@ mybin=$main_folder/bin
 srcs=( n50 ) 
 errs=0
 
+mkdir -p $mybin
+
 cd $mysrcs
 mkdir -p mylibs
 
