@@ -41,7 +41,7 @@ else
     ./align.sh
 fi
 
-sleep 1
+sleep 10
 waitfor="hic"
 if [[ $lfsjobs == 1 ]]; then
     echo "   ...Waiting for all jobs to finish...sleeping zzz.."
