@@ -21,7 +21,7 @@ fi
 
 if [ $step == "install" ]; then
   ###################################################
-  echo; echo " Installing forACT ..."
+  echo; echo " Installing hicclus ..."
   ###################################################
   source $myscripts/install.sh  $mymain
 fi

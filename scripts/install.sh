@@ -1,12 +1,14 @@
 #!/bin/bash
 
+
+
 main_folder=$1
 myscripts=$mymain/scripts
 mysrcs=$main_folder/src
 mybin=$main_folder/bin
 
 # srcs to compile:
-srcs=( n50 ) 
+srcs=( n50 map_reads ) 
 errs=0
 
 mkdir -p $mybin
