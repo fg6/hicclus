@@ -23,24 +23,30 @@ if [[ $aligner == "bwa" ]]; then
     
     already_there="Yes"
     if [[ ! -f  $draftdir/$(basename $mydraft).bwt ]] ; then
-	cd $draftdir
-	ln -sf $mydraft .
-	already_there="No"
 
-	command=`$mybwa index $(basename $mydraft)`
-	if [[ $debug == 1 ]]; then
-	    $command
+	if [[ -f $mydraft.bwt ]] ; then
+	    cd $draftdir
+	    ln -sf $mydraft.* .
 	else
-	    $command &> /dev/null
-       fi
-    fi
-
-    if [[ -f  $draftdir/$(basename $mydraft).bwt ]] ; then
-	echo "  1. Bwa indexing done  (Already there?" $already_there")"
-    else
-	echo "  Error: Something went wrong while indexing" $(basename $mydraft) in $draftdir
-	echo "  (Already there?" $already_there")"
-	exit
+	    cd $draftdir
+	    ln -sf $mydraft .
+	    already_there="No"
+	    
+	    command=`$mybwa index $(basename $mydraft)`
+	    if [[ $debug == 1 ]]; then
+		$command
+	    else
+		$command &> /dev/null
+	    fi
+	fi
+	
+	if [[ -f  $draftdir/$(basename $mydraft).bwt ]] ; then
+	    echo "  1. Bwa indexing done  (Already there?" $already_there")"
+	else
+	    echo "  Error: Something went wrong while indexing" $(basename $mydraft) in $draftdir
+	    echo "  (Already there?" $already_there")"
+	    exit
+	fi
     fi
 fi
 
@@ -76,13 +82,13 @@ fi
 
 if [ -f  $alfile  ]; then 
     echo "  3. Created alignment file (Already there?" $already_there")"
+    cd $aldir
+    $mysrcs/map_reads/map_reads $alfile $draftdir/scaffolds_lenghts.txt
 else
     echo "  Error: Something went wrong during bwa"
     echo "  (Already there?" $already_there")"
-    exit
+    exit 
 fi
-
-
 
 exit
 
