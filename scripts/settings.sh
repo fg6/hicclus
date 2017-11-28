@@ -11,6 +11,7 @@ myncpus=15
 
 ########################
 mymain=MYMAIN
+myref=MYREF
 mydraft=MYDRAFT
 myfastq1=MYFQ1
 myfastq2=MYFQ2
@@ -24,6 +25,9 @@ mybin=$mymain/bin
 mybwa=$mybin/bwa
 wdir=$project/$aligner\_temp
 draftdir=$wdir/draft
+refdir=$wdir/ref
+refaldir=$wdir/refalign
+refalfile=$refaldir/bwa.sam
 aldir=$wdir/aligns
 alfile=$aldir/bwa.sam
 results=$wdir/results

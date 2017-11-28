@@ -32,15 +32,16 @@ if [ $step == "setup" ]; then
   # echo; echo " Setup for your project in progress..."
   ###################################################
   if [ $# -lt 4 ]  || [ $2 == '-h' ]; then
-      echo; echo "  Usage:" $(basename $0) setup \</full/path/to/draft\>  \</full/path/to/hic-reads1.fastq\>  \</full/path/to/hic-reads2.fastq\>  \</full/path/to/destdir\>
+      echo; echo "  Usage:" $(basename $0) setup  \</full/path/to/ref\> \</full/path/to/draft\>  \</full/path/to/hic-reads1.fastq\>  \</full/path/to/hic-reads2.fastq\>  \</full/path/to/destdir\>
       echo
+      echo "   /full/path/to/ref: location of draft assembly (fasta) "
       echo "   /full/path/to/draft: location of draft assembly (fasta) "
       echo "   /full/path/to/hic-reads?.fastq: location of HiC raw reads 1 and 2 (fastq) "
       echo "   /full/path/to/destdir: location of your project "
       echo
       exit
   fi
-  $myscripts/setup.sh $mymain $2 $3 $4 $5
+  $myscripts/setup.sh $mymain $2 $3 $4 $5 $6
 
 fi
 

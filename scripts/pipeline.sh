@@ -18,6 +18,7 @@ if [ $step == "align" ]; then
     ###############   ALIGN PIPELINE    ##################
     #######################################################
     err=0
+    if [ ! -f $myref ]; then echo; echo "Could not find reference assembly in" $myref;  echo "error"; err=$(($err+1)); fi
     if [ ! -f $mydraft ]; then echo; echo "Could not find draft assembly in" $mydraft;  echo "error"; err=$(($err+1)); fi
     if [ ! -f $myfastq1 ]; then echo; echo "Could not find hic fastq1 file in" $myfastq1;  echo "error";err=$(($err+1)); fi
     if [ ! -f $myfastq2 ]; then echo; echo "Could not find hic fastq2 file in" $myfastq2;  echo "error";err=$(($err+1));  fi

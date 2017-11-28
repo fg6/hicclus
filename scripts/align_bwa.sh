@@ -6,11 +6,21 @@ if [ $# -lt 1 ]; then
 fi
 
 project=$1
+what=$2
 source $project/project.sh
 
-mkdir -p $aldir
-cd $aldir
 
+if [[ $what == "ref" ]]; then
+    mkdir -p $refaldir
+    cd $refaldir
+    thisalfile=$refalfile
+    waitfor="rhic"
+else
+    mkdir -p $aldir
+    cd $aldir
+    thisalfile=$alfile
+    waitfor="dhic"
+fi
 
 subqueue="s#MYQUEUE#$myqueue#g"
 submem="s#MYJOBMEM#$myjobmem#g"
@@ -19,7 +29,7 @@ subcpu="s#MYCPUS#$myncpus#g"
 awkcommand=`echo '{print \$1, \$2, \$3, \$4, \$5, \$6, \$7, \$8, \$9, \$11, \$12, \$14}'`
 # 4 == unmapped  256==secondary   0x900 == 0x800 (supplementary) + 0x100 (secondary) 
 #command=`echo "$mybwa mem -t $myncpus $draftdir/$(basename $mydraft) $myfastq1 $myfastq2 | samtools view -q 1 -F 4 -F 0x900 | grep -v XA:Z | grep -v SA:Z | awk '$awkcommand' > $alfile"`
-command=`echo "$mybwa mem -t $myncpus $draftdir/$(basename $mydraft) $myfastq1 $myfastq2 | samtools view -q 1 -F 0x900  > $alfile"`
+command=`echo "$mybwa mem -t $myncpus $draftdir/$(basename $mydraft) $myfastq1 $myfastq2 | samtools view -q 1 -F 0x900  > $thisalfile"`
 
 echo $command > align.sh
 chmod +x align.sh
@@ -42,7 +52,6 @@ else
 fi
 
 sleep 10
-waitfor="hic"
 if [[ $lfsjobs == 1 ]]; then
     echo "   ...Waiting for all jobs to finish...sleeping zzz.."
 
