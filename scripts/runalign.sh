@@ -39,14 +39,14 @@ if [[ $aligner == "bwa" ]]; then
 		$command &> /dev/null
 	    fi
 	fi
+    fi
 	
-	if [[ -f  $draftdir/$(basename $mydraft).bwt ]] ; then
-	    echo "  1. Bwa indexing done  (Already there?" $already_there")"
-	else
-	    echo "  Error: Something went wrong while indexing" $(basename $mydraft) in $draftdir
-	    echo "  (Already there?" $already_there")"
-	    exit
-	fi
+    if [[ -f  $draftdir/$(basename $mydraft).bwt ]] ; then
+	echo "  1. Draft Bwa indexing done  (Already there?" $already_there")"
+    else
+	echo "  Error: Something went wrong while indexing" $(basename $mydraft) in $draftdir
+	echo "  (Already there?" $already_there")"
+	exit
     fi
 fi
 
@@ -56,7 +56,7 @@ if [[ ! -f $draftdir/myn50.dat ]] || [[ ! -s $draftdir/myn50.dat ]] || [[ ! -s $
     already_there="No"
 fi
 if [[ -f $draftdir/myn50.dat ]] && [[ -s $draftdir/myn50.dat ]]; then
-    echo "  2. Assembly stats checked  (Already there?" $already_there")"
+    echo "  2. Assembly Stats checked  (Already there?" $already_there")"
 else
     echo "  Error: Something went wrong while checking" $(basename $mydraft) stats
     echo "  (Already there?" $already_there")"
@@ -64,7 +64,7 @@ else
 fi
 
 
-echo "  Step 1 Done: draft assembly ready! "
+echo "  Step 1 Done: Draft assembly ready! "
 echo
 
 
@@ -94,14 +94,14 @@ if [[ $aligner == "bwa" ]]; then
 		$command &> /dev/null
 	    fi
 	fi
-	
-	if [[ -f  $refdir/$(basename $myref).bwt ]] ; then
-	    echo "  2. Bwa ref indexing done  (Already there?" $already_there")"
-	else
-	    echo "  Error: Something went wrong while indexing" $(basename $myref) in $refdir
-	    echo "  (Already there?" $already_there")"
-	    exit
-	fi
+    fi
+
+    if [[ -f  $refdir/$(basename $myref).bwt ]] ; then
+	echo "  1. Ref Bwa ref indexing done  (Already there?" $already_there")"
+    else
+	echo "  Error: Something went wrong while indexing" $(basename $myref) in $refdir
+	echo "  (Already there?" $already_there")"
+	exit
     fi
 fi
 
@@ -111,7 +111,7 @@ if [[ ! -f $refdir/myn50.dat ]] || [[ ! -s $refdir/myn50.dat ]] || [[ ! -s $refd
     already_there="No"
 fi
 if [[ -f $refdir/myn50.dat ]] && [[ -s $refdir/myn50.dat ]]; then
-    echo "  3. Ref  stats checked  (Already there?" $already_there")"
+    echo "  2. Ref Stats checked  (Already there?" $already_there")"
 else
     echo "  Error: Something went wrong while checking" $(basename $myref) stats
     echo "  (Already there?" $already_there")"
@@ -119,7 +119,7 @@ else
 fi
 
 
-echo "  Step 2 Done: ref assembly ready! "
+echo "  Step 2 Done: Ref assembly ready! "
 echo
 
 #############################################################
@@ -134,18 +134,16 @@ if [ ! -f  $refalfile  ]; then
     fi
 fi
 
-if [ -f  $refalfile ] && [ ! -f $refaldir/paired_hic_reads.als ]; then 
-    echo "  4. Created ref alignment file (Already there?" $already_there")"
-    cd $refaldir
-    $mysrcs/map_reads/map_reads $refalfile $refdir/scaffolds_lenghts.txt
+if [ -f  $refalfile ]; then 
+    echo "  1. Alignment against Ref done (Already there?" $already_there")"
 else
-    echo "  Error: Something went wrong during bwa"
+    echo "  Error: Something went wrong during bwa against ref"
     echo "  (Already there?" $already_there")"
     exit 
 fi
 
 #############################################################
-##################  ALIGN HI-C READS TO DRAFT  ################
+##################  ALIGN HI-C READS TO DRAFT  ##############
 #############################################################
 
 already_there="Yes"
@@ -156,17 +154,33 @@ if [ ! -f  $alfile  ]; then
     fi
 fi
 
-exit
-
-# here need to have new map_reads.cpp that takes draft alignment and ref alignment and create vectors 
-if [ -f  $alfile  ] && [ ! -f $aldir/paired_hic_reads.als ]; then 
-    echo "  5. Created draft alignment file (Already there?" $already_there")"
-    cd $aldir
-#    $mysrcs/map_reads/map_reads $alfile $draftdir/scaffolds_lenghts.txt
+if [ -f  $alfile  ]; then 
+    echo "  2. Alignment against Draft done (Already there?" $already_there")"
 else
-    echo "  Error: Something went wrong during bwa"
+    echo "  Error: Something went wrong during bwa against draft"
     echo "  (Already there?" $already_there")"
     exit 
 fi
 
+echo "  Step 3 Done: BWA mapping done! "
+echo
 
+
+#############################################################
+#####################   HI-C ANALYSIS  ######################
+#############################################################
+mkdir -p $hicdir
+
+already_there="Yes"
+if [ ! -f  $hictochr  ] || [ ! -f $hictoscaff ]; then 
+    cd $hicdir
+    already_there="No"
+    $mysrcs/map_reads/map_reads $refalfile $refdir/scaffolds_lenghts.txt  $alfile $draftdir/scaffolds_lenghts.txt 
+fi
+
+exit
+if [ ! -f  $hictochr  ] || [ ! -f $hictoscaff ]; then 
+    echo "  Error: Something went wrong during map_reads"
+    echo "  (Already there?" $already_there")"
+    exit 
+fi

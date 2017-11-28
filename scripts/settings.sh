@@ -28,6 +28,10 @@ draftdir=$wdir/draft
 refdir=$wdir/ref
 refaldir=$wdir/refalign
 refalfile=$refaldir/bwa.sam
-aldir=$wdir/aligns
+aldir=$wdir/align
 alfile=$aldir/bwa.sam
-results=$wdir/results
+
+hicdir=$wdir/hicana
+hictochr=$hicdir/hic_to_chr.als
+hictoscaff=$hicdir/hic_to_scaff.als
+

@@ -29,8 +29,13 @@ subcpu="s#MYCPUS#$myncpus#g"
 awkcommand=`echo '{print \$1, \$2, \$3, \$4, \$5, \$6, \$7, \$8, \$9, \$11, \$12, \$14}'`
 # 4 == unmapped  256==secondary   0x900 == 0x800 (supplementary) + 0x100 (secondary) 
 #command=`echo "$mybwa mem -t $myncpus $draftdir/$(basename $mydraft) $myfastq1 $myfastq2 | samtools view -q 1 -F 4 -F 0x900 | grep -v XA:Z | grep -v SA:Z | awk '$awkcommand' > $alfile"`
-command=`echo "$mybwa mem -t $myncpus $draftdir/$(basename $mydraft) $myfastq1 $myfastq2 | samtools view -q 1 -F 0x900  > $thisalfile"`
 
+
+if [[ $what == "ref" ]]; then
+    command=`echo "$mybwa mem -t $myncpus $draftdir/$(basename $mydraft) $myfastq1 $myfastq2 | samtools view -q 1 -F 0x900  > $thisalfile"`
+else
+    command=`echo "$mybwa mem -t $myncpus $draftdir/$(basename $mydraft) $myfastq1 $myfastq2 | samtools view -q 1 -F 0x900  > $thisalfile"`
+fi
 echo $command > align.sh
 chmod +x align.sh
  
