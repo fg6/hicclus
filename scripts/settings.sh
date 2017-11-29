@@ -34,4 +34,6 @@ alfile=$aldir/bwa.sam
 hicdir=$wdir/hicana
 hictochr=$hicdir/hic_to_chr.als
 hictoscaff=$hicdir/hic_to_scaff.als
+sortedhictoscaff=$hicdir/hic_to_scaff_sorted.als
+
 

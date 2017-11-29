@@ -8,7 +8,7 @@ mysrcs=$main_folder/src
 mybin=$main_folder/bin
 
 # srcs to compile:
-srcs=( n50 map_reads ) 
+srcs=( n50 map_reads sort_hiclinks ) 
 errs=0
 
 mkdir -p $mybin

@@ -176,11 +176,32 @@ if [ ! -f  $hictochr  ] || [ ! -f $hictoscaff ]; then
     cd $hicdir
     already_there="No"
     $mysrcs/map_reads/map_reads $refalfile $refdir/scaffolds_lenghts.txt  $alfile $draftdir/scaffolds_lenghts.txt 
+    echo
 fi
 
-exit
 if [ ! -f  $hictochr  ] || [ ! -f $hictoscaff ]; then 
     echo "  Error: Something went wrong during map_reads"
     echo "  (Already there?" $already_there")"
     exit 
 fi
+
+exit
+already_there="Yes"
+if [ ! -f $sortedhictoscaff ]; then 
+    cd $hicdir
+    already_there="No"
+    $mysrcs/sort_hiclinks/sort_hiclinks $hictoscaff $draftdir/scaffolds_lenghts.txt 
+
+fi
+
+if [ ! -f  $sortedhictoscaff  ]; then 
+    echo "  Error: Something went wrong during sorting links"
+    echo "  (Already there?" $already_there")"
+    exit 
+fi
+
+
+
+
+echo "  Step 4 Done: HIC links found and sorted! "
+echo

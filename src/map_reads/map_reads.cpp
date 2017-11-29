@@ -26,14 +26,18 @@ static gzFile fp;
 
 static  std::map<string, long int> lenmap;
 static  std::map<string, long int> refmap;
-static  std::map<string, long int>  samechr_map;
-static  std::map<string, long int>  samescaff_map;
-//static  std::map<string, std::tuple<string,long int, string, long int, long int, long int, long int >> samechr_map;
+static  std::map<string, int>  samechr_map;
+static  std::map<string, int>  samescaff_map;
+
+
+static std::map< std::string, 
+	  std::map< std::string, std::tuple<vector<long int>,vector<long int>,vector<int> > > > pairmap;
 
 int read_refals(char* file);
 int read_draftals(char* file);
 std::map<string, long int> readscaff(char* file);
 int read_hicmap(string file);
+//int printvec(vector<auto> vec);
 
 
 static int step2=0;
@@ -52,12 +56,12 @@ int main(int argc, char *argv[])
     gzclose(fp);
   }
   
-  //Read Chr lengths
+  //Read Scaffold lengths
   fp = gzopen(argv[4],"r");
   lenmap=readscaff(argv[4]);
   cout << "  Read Chr lengths " << endl;
 
-  //Read Scaffold lengths
+  //Read Chrs lengths
   fp = gzopen(argv[2],"r");
   refmap=readscaff(argv[2]);
   cout << "  Read Scaffolds lengths " << endl;
@@ -84,6 +88,60 @@ int main(int argc, char *argv[])
   myals.close();
 
 
+  int ii=0;
+  static int link_numbers=1;
+  vector<int> links;
+
+  cout << endl;
+  for(auto const &key1 : pairmap) {
+    string scaffold = key1.first;
+    for(auto const &key2 : pairmap[scaffold]) {
+      string mate = key2.first;
+      vector<long int> pos1 =  std::get<0>(pairmap[scaffold][mate]);
+      vector<long int> pos2 =  std::get<1>(pairmap[scaffold][mate]);
+      vector<int> samechr =  std::get<2>(pairmap[scaffold][mate]);
+      int  nlinks= pos1.size();     
+      links.push_back( nlinks );
+      
+      int printout=0;
+      
+      if ( nlinks  >= link_numbers && ii<50){
+	int countones = std::count (samechr.begin(), samechr.end(), 1);
+	int is_same_chr =0;
+
+	if ( countones*100./nlinks  > 90 )
+	  is_same_chr = 1;
+	else
+	  is_same_chr =0;
+
+
+	if( is_same_chr == 0 )
+	  cout << " found" << endl;
+
+	ii++;
+	if(printout){
+	  cout <<  is_same_chr << " " << nlinks << "  ";
+	  cout << "\t";
+	  std::cout.setf(std::ios_base::fixed, std::ios_base::floatfield);
+	  std::cout.precision(0);
+	  for ( int p: pos1 ) cout  << p*100./lenmap[scaffold] << " ";
+	  cout << "  ";
+	  for ( int p: pos2 ) cout  << p*100./lenmap[mate] << " ";	
+	  cout << endl;
+	}
+
+      }
+    }
+  }
+
+  myname = "number_of_links.txt";
+  myals.open(myname.c_str()); 
+  for (int l=0; l<links.size(); l++){
+    myals << links[l] << endl;
+  }
+  myals.close();
+  
+  
   return 0;
 }
 
@@ -109,7 +167,6 @@ int read_draftals(char* file){
 
 	if( samescaff_map.count(read) ) continue;
 	if( !samechr_map.count(read) ) {
-	  //cout << " Warning! read " << read << " not found in the Ref read-map, was it unmapped?" << endl;
 	  not_found_in_chr++;
 	  continue;
 	}
@@ -119,13 +176,11 @@ int read_draftals(char* file){
 	  same_scaff=1;
 	  sscaffnum++;
 	}else{
-	  //if(samechr_map[read]) 
-	  same_chr_diff_scaff++;
+	  if(samechr_map[read]) 
+	    same_chr_diff_scaff++;
 	}
 	
-	schrnum+=samechr_map[read];
-
-       
+	schrnum+=samechr_map[read];       
 
 	// filter on flag and mapq?
 	samescaff_map[read] = same_scaff;
@@ -133,7 +188,54 @@ int read_draftals(char* file){
 	myals << read << " " << scaffold << " " <<  pos << " " 
 	      << mate<< " " << mate_pos<< " " << insert << " " 
 	      << same_scaff << " " << samechr_map[read] << endl; 
+
+	if(samechr_map[read]==0)cout << " found "
+				     << read << " " << scaffold 
+				     << " " << mate
+				     << endl; 
+	if(scaffold == mate) continue;
+	
+	if( pairmap.count(scaffold) &&  pairmap[scaffold].count(mate)) {
+	  // pair existing already! Add element
+	  vector<long int> pos1 =  std::get<0>(pairmap[scaffold][mate]);
+	  vector<long int> pos2 =  std::get<1>(pairmap[scaffold][mate]);
+	  vector<int> samechr =  std::get<2>(pairmap[scaffold][mate]);
+	  
+	  pos1.push_back(pos);
+	  pos2.push_back(mate_pos);
+	  samechr.push_back(samechr_map[read]);	    
+	  pairmap[scaffold][mate] = std::make_tuple(pos1,pos2,samechr);
+
+	}else{ // new pair
+	  vector<long int> pos1 = {pos};
+	  vector<long int> pos2 = {mate_pos};
+	  vector<int> samechr = {samechr_map[read]};
+	  pairmap[scaffold][mate] = std::make_tuple(pos1,pos2,samechr);
+	}	    
+
+	if (pairmap.count(mate) && pairmap[mate].count(scaffold) ){
+	  // pair existing already! Add element
+	  vector<long int> pos1 =  std::get<0>(pairmap[mate][scaffold]);
+	  vector<long int> pos2 =  std::get<1>(pairmap[mate][scaffold]);
+	  vector<int> samechr =  std::get<2>(pairmap[mate][scaffold]);
+	  
+	  pos1.push_back(mate_pos);
+	  pos2.push_back(pos);
+	  samechr.push_back(samechr_map[read]);	    
+	  pairmap[mate][scaffold] = std::make_tuple(pos1,pos2,samechr);
+	  
+	}else{
+	  // new pair
+	  vector<long int> pos1 = {mate_pos};
+	  vector<long int> pos2 = {pos};
+	  vector<int> samechr = {samechr_map[read]};
+	  pairmap[mate][scaffold] = std::make_tuple(pos1,pos2,samechr);
+	}	 
+	
   }
+	
+
+
 
   cout << " Mapping done, I found: " 
        << readnum << " reads, " << not_found_in_chr << " reads which were not mapped to the Ref, \n"
@@ -172,7 +274,7 @@ int read_hicmap(string file){
     ss >> read >> scaffold >> pos >>
       mate >> mate_pos >> insert >> same_scaff ;
 
-    if ( scaffold == mate )  same_scaff =1; // take this out when rerunning
+    //if ( scaffold == mate )  same_scaff = 1;
     samechr_map[read] = same_scaff;
   }
  
@@ -208,7 +310,6 @@ int read_refals(char* file){
 	// thistuple=std::make_tuple(scaffold, pos, mate, mate_pos, insert, lenmap[scaffold], lenmap[mate]);
 	
 	samechr_map[read] = same_scaff;
- 
 	  
 	myals << read << " " << scaffold << " " <<  pos << " " 
 	      << mate<< " " << mate_pos<< " " << insert << " " << same_scaff << endl; 
