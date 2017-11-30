@@ -93,6 +93,8 @@ int main(int argc, char *argv[])
   vector<int> links;
 
   cout << endl;
+  myname = "map_n_reads.txt";
+  myals.open(myname.c_str()); 
   for(auto const &key1 : pairmap) {
     string scaffold = key1.first;
     for(auto const &key2 : pairmap[scaffold]) {
@@ -103,7 +105,7 @@ int main(int argc, char *argv[])
       int  nlinks= pos1.size();     
       links.push_back( nlinks );
       
-      int printout=0;
+      int printout=1;
       
       if ( nlinks  >= link_numbers && ii<50){
 	int countones = std::count (samechr.begin(), samechr.end(), 1);
@@ -114,25 +116,22 @@ int main(int argc, char *argv[])
 	else
 	  is_same_chr =0;
 
-
-	if( is_same_chr == 0 )
-	  cout << " found" << endl;
-
 	ii++;
 	if(printout){
-	  cout <<  is_same_chr << " " << nlinks << "  ";
-	  cout << "\t";
+	  myals <<  is_same_chr << " " << nlinks << "  ";
+	  myals<< "\t";
 	  std::cout.setf(std::ios_base::fixed, std::ios_base::floatfield);
 	  std::cout.precision(0);
-	  for ( int p: pos1 ) cout  << p*100./lenmap[scaffold] << " ";
-	  cout << "  ";
-	  for ( int p: pos2 ) cout  << p*100./lenmap[mate] << " ";	
-	  cout << endl;
+	  for ( int p: pos1 )  myals << p*100./lenmap[scaffold] << " ";
+	  myals << "  ";
+	  for ( int p: pos2 )  myals  << p*100./lenmap[mate] << " ";	
+	   myals << endl;
 	}
 
       }
     }
   }
+  myals.close();
 
   myname = "number_of_links.txt";
   myals.open(myname.c_str()); 
@@ -189,10 +188,7 @@ int read_draftals(char* file){
 	      << mate<< " " << mate_pos<< " " << insert << " " 
 	      << same_scaff << " " << samechr_map[read] << endl; 
 
-	if(samechr_map[read]==0)cout << " found "
-				     << read << " " << scaffold 
-				     << " " << mate
-				     << endl; 
+
 	if(scaffold == mate) continue;
 	
 	if( pairmap.count(scaffold) &&  pairmap[scaffold].count(mate)) {
