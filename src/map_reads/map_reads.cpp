@@ -30,6 +30,7 @@ static  std::map<string, int>  samechr_map;
 static  std::map<string, int>  samescaff_map;
 
 
+
 static std::map< std::string, 
 	  std::map< std::string, std::tuple<vector<long int>,vector<long int>,vector<int> > > > pairmap;
 
@@ -87,16 +88,27 @@ int main(int argc, char *argv[])
   read_draftals(argv[3]);
   myals.close();
 
-
+  vector<float> positions;
+  int bins=100;
+  int val_min= 0;
+  int val_max= 100;
+  float bin_width = (val_max - val_min) / bins; 
+  for (int k=0; k<=bins; k++){
+    positions.push_back(k);
+  }
   int ii=0;
   static int link_numbers=1;
   vector<int> links;
 
+  
   cout << endl;
   myname = "map_n_reads.txt";
   myals.open(myname.c_str()); 
   for(auto const &key1 : pairmap) {
     string scaffold = key1.first;
+
+
+
     for(auto const &key2 : pairmap[scaffold]) {
       string mate = key2.first;
       vector<long int> pos1 =  std::get<0>(pairmap[scaffold][mate]);
@@ -105,6 +117,18 @@ int main(int argc, char *argv[])
       int  nlinks= pos1.size();     
       links.push_back( nlinks );
       
+      // new map for each pair of scaffolds
+      /*   std::map<int, int> linksmap1;
+      std::map<int, int> linksmap2;
+      for( int j=0; j<100; j++){
+	linksmap1[j] = 0;
+	linksmap2[j] = 0;
+	}*/
+
+      vector<int> linksmap1(bins, 0);
+      vector<int> linksmap2(bins, 0);
+ 
+
       int printout=1;
       
       if ( nlinks  >= link_numbers && ii<50){
@@ -117,15 +141,35 @@ int main(int argc, char *argv[])
 	  is_same_chr =0;
 
 	ii++;
+	for ( int p: pos1 ) {
+	  float thispos=p*100./lenmap[scaffold];
+	  //int bin_idx = (int)((value - val_min) / bin_width);
+	  int bin_idx = (int)((thispos - val_min) / bin_width);
+	  
+	  if( thispos < 0  ||  thispos > 100 ) 
+	    cout << " Error with bin! " <<  thispos << " " << bin_idx << endl;
+
+	  //linksmap1[bin_idx]+=1;	  
+	  linksmap1[bin_idx]++;
+	}
+	  
+	for ( int p: pos2 ) {
+	  float thispos=p*100./lenmap[mate];
+	  //int bin_idx = (int)((value - val_min) / bin_width);
+	  int bin_idx = (int)((thispos - val_min) / bin_width);
+	  
+	  if( thispos < 0  ||  thispos > 100 ) 
+	    cout << " Error with bin! " <<  thispos << " " << bin_idx << endl;
+
+	  //linksmap2[bin_idx]+=1;	  
+	  linksmap2[bin_idx]++;
+	}
+	
 	if(printout){
-	  myals <<  is_same_chr << " " << nlinks << "  ";
-	  myals<< "\t";
-	  std::cout.setf(std::ios_base::fixed, std::ios_base::floatfield);
-	  std::cout.precision(0);
-	  for ( int p: pos1 )  myals << p*100./lenmap[scaffold] << " ";
-	  myals << "  ";
-	  for ( int p: pos2 )  myals  << p*100./lenmap[mate] << " ";	
-	   myals << endl;
+	  myals <<  is_same_chr << " " << nlinks ;
+	  for ( int p: linksmap1 )  myals << " " << p ;
+	  for ( int p: linksmap2 )  myals  << " " << p;	
+	  myals << endl;
 	}
 
       }

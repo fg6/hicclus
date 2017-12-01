@@ -8,14 +8,17 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.grid_search import GridSearchCV
 from matplotlib import pyplot as plt
 
+import fileinput
+
 def get_data(file):
-    df = pd.read_csv(file)
+    df = pd.read_csv(file, sep=" ")
     data = df.as_matrix()
     np.random.shuffle(data)
-    X = data[:, 1:] # data is from 0..255
+    X = data[:, 1:]  # 100 # norm by bin
     Y = data[:, 0]
-    return X, Y
+    Z = data[:, 2] 
 
+    return X, Z, Y
 
 def find_best():
     clf =  RandomForestClassifier(n_jobs=-1,max_features= 'sqrt' , n_estimators=50, oob_score = True) 
@@ -37,28 +40,43 @@ def find_best():
     return CV_rfc.best_estimator_.n_estimators, CV_rfc.best_estimator_.max_features, CV_rfc.best_estimator_.criterion 
 
 
-def plottami(X, Y):
+def myfit(x, y):
+    clf =  RandomForestClassifier(n_jobs=-1, max_features= maxf, n_estimators=n_est, 
+                                  criterion = crit, min_samples_leaf = min_s_leaf, oob_score = True) 
+    clf.fit(x, y)
+    return(clf)
+
+
+def plottami(x, y):
     
-    plt.hist(Y) #, histtype=‘step’)
-    plt.show()
+
+    
+    #plt.hist(Y) 
+    #plt.show()
 
 #### main ####
 resize=1
 findbest=0
-dofit=0
-predict=0
-plot=1
+fitX=1
+fitZ=1
+predictX=1
+predictZ=1
+plot=0
 
 
-del size
 try: 
     size
-except NameError:
-    X, target = get_data('map_n_reads.txt')
+except NameError:    
+    myfile='/lustre/scratch117/sciops/team117/hpag/fg6/analysis/Devel/mouse/bothhic_fromscratch/bwa_temp/hicana/map_n_reads.txt'
+    X, Z, target = get_data(myfile)
     size=len(target)
 
 if resize:  
     X_train, X_test, y_train, y_test = train_test_split(X, target, random_state=1, test_size=0.2)
+    Z=Z.reshape(-1, 1) 
+    Z_train, Z_test, y_train, y_test = train_test_split(Z, target, random_state=1, test_size=0.2)
+
+
 
 
 if plot:
@@ -67,7 +85,6 @@ if plot:
 
 if findbest:
     n_est, maxf, crit, min_s_leaf = find_best()
-
 else:
     n_est = 200 
     maxf = 'auto'
@@ -75,19 +92,30 @@ else:
     min_s_leaf = 10
 
 
-if dofit:        
-    clf =  RandomForestClassifier(n_jobs=-1, max_features= maxf, n_estimators=n_est, 
-                                  criterion = crit, min_samples_leaf = min_s_leaf, oob_score = True) 
-    clf.fit(X_train,  y_train)
+if fitX:    
+    Xclf =  myfit(X_train, y_train)
+if fitZ:    
+    Zclf =  myfit(Z_train, y_train)
+
     
    
-if predict:
-    results = clf.predict(X_train) 
+if predictX:
+    results = Xclf.predict(X_train) 
     score = metrics.accuracy_score(y_train,results)
-    print("train:",score)
+    print("Using X: train:",score)
 
-    results = clf.predict(X_test)
+    results = Xclf.predict(X_test)
     score =  metrics.accuracy_score(y_test,results)
-    print("test",score)
+    print("Using X: test",score)
+
+
+if predictZ:
+    results = Zclf.predict(Z_train) 
+    score = metrics.accuracy_score(y_train,results)
+    print("Using Z: train:",score)
+
+    results = Zclf.predict(Z_test)
+    score =  metrics.accuracy_score(y_test,results)
+    print("Using Z: test",score)
 
 
