@@ -108,7 +108,6 @@ int main(int argc, char *argv[])
     string scaffold = key1.first;
 
 
-
     for(auto const &key2 : pairmap[scaffold]) {
       string mate = key2.first;
       vector<long int> pos1 =  std::get<0>(pairmap[scaffold][mate]);
@@ -117,13 +116,7 @@ int main(int argc, char *argv[])
       int  nlinks= pos1.size();     
       links.push_back( nlinks );
       
-      // new map for each pair of scaffolds
-      /*   std::map<int, int> linksmap1;
-      std::map<int, int> linksmap2;
-      for( int j=0; j<100; j++){
-	linksmap1[j] = 0;
-	linksmap2[j] = 0;
-	}*/
+
 
       vector<int> linksmap1(bins, 0);
       vector<int> linksmap2(bins, 0);
@@ -131,7 +124,7 @@ int main(int argc, char *argv[])
 
       int printout=1;
       
-      if ( nlinks  >= link_numbers && ii<50){
+      if ( nlinks  >= link_numbers ){
 	int countones = std::count (samechr.begin(), samechr.end(), 1);
 	int is_same_chr =0;
 
