@@ -38,8 +38,6 @@ int read_refals(char* file);
 int read_draftals(char* file);
 std::map<string, long int> readscaff(char* file);
 int read_hicmap(string file);
-//int printvec(vector<auto> vec);
-
 
 static int step2=0;
 
@@ -101,6 +99,8 @@ int main(int argc, char *argv[])
   vector<int> links;
 
   
+  std::map<std::pair<string, string>, int>  done_map;
+
   cout << endl;
   myname = "map_n_reads.txt";
   myals.open(myname.c_str()); 
@@ -110,6 +110,17 @@ int main(int argc, char *argv[])
 
     for(auto const &key2 : pairmap[scaffold]) {
       string mate = key2.first;
+      
+
+      // print each couple only once
+      if ( done_map.count(std::make_pair(scaffold, mate))
+	   || done_map.count(std::make_pair(mate, scaffold)) ){
+	continue;
+      }else{
+	done_map[std::make_pair(scaffold, mate)] = 1;
+	done_map[std::make_pair(mate,scaffold)] = 1;
+      }
+
       vector<long int> pos1 =  std::get<0>(pairmap[scaffold][mate]);
       vector<long int> pos2 =  std::get<1>(pairmap[scaffold][mate]);
       vector<int> samechr =  std::get<2>(pairmap[scaffold][mate]);
@@ -117,11 +128,8 @@ int main(int argc, char *argv[])
       links.push_back( nlinks );
       
 
-
       vector<int> linksmap1(bins, 0);
       vector<int> linksmap2(bins, 0);
- 
-
       int printout=1;
       
       if ( nlinks  >= link_numbers ){
@@ -159,7 +167,11 @@ int main(int argc, char *argv[])
 	}
 	
 	if(printout){
-	  myals <<  is_same_chr << " " << nlinks ;
+	  myals <<  scaffold << " " << mate << " " 
+		<< is_same_chr << " " 
+		<< lenmap[scaffold] << " " 
+		<< lenmap[mate]<< " " 
+		<< nlinks ;
 	  for ( int p: linksmap1 )  myals << " " << p ;
 	  for ( int p: linksmap2 )  myals  << " " << p;	
 	  myals << endl;

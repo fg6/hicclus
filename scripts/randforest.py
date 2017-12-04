@@ -5,20 +5,31 @@ from sklearn import metrics
 from sklearn.model_selection import train_test_split
 
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.grid_search import GridSearchCV
+from sklearn.model_selection  import GridSearchCV
 from matplotlib import pyplot as plt
 
 import fileinput
 
 def get_data(file):
     df = pd.read_csv(file, sep=" ", header=None)
+    
+    t = 0   # target
+    nlinks = 2  #3 
+    
+    if nlinks == 3:
+        df[1] = df[1] / df[1][df[1].idxmax()]
+        df[2] = df[2] / df[2][df[2].idxmax()]
+    
+    df.loc[:, nlinks+1:] = df.loc[:, nlinks+1:] / df[nlinks][df[nlinks].idxmax()]  #   norm by max links
+
+
     data = df.as_matrix()
     np.random.shuffle(data)
-    x = data[:, 1:]  # 100 # norm by bin
-    y = data[:, 0]
-    z = data[:, 1] 
+    x = data[:, 1:]  
+    y = data[:, t]
+    z = data[:, nlinks] 
 
-    return x, y, z
+    return x, y, z, df
 
 
 def find_best(x, y):
@@ -49,22 +60,26 @@ def myfit(x, y):
 
 
 def plottami(x, y, z):
-
-    same_chr = np.where(y == 1)[0]
-    print("  I have", len(y), "cases, of which", 
-          same_chr[0], "are from the same chromosome (", same_chr[0]*100./len(y), "%)")
     
+    same_chr = np.sum(y == 1)
+    print("  I have", len(y), "linked pair of scaffolds and:\n    ", 
+          same_chr, "from the same chromosome (", 
+          same_chr*100./len(y), "%)")
+    
+    nlinks = np.sum(z)
+    print("    ", nlinks, "total number of links")
+   
     #plt.hist(z) 
     #plt.show()
-    plt.scatter(z,y) 
-    plt.show()
+    #plt.scatter(z,y) 
+    #plt.show()
 
 #### main ####
 resize=1
-findbest=0
-fitX=0
+findbest=1
+fitX=1
 fitZ=1
-predictX=0
+predictX=1
 predictZ=1
 info=0
 
@@ -76,12 +91,13 @@ info=0
 try: 
     size
 except NameError:    
-    myfile='/lustre/scratch117/sciops/team117/hpag/fg6/analysis/Devel/mouse/bothhic_fromscratch/bwa_temp/hicana/map_n_reads.txt'
-    X, target, Z = get_data(myfile)
+    myfile='/lustre/scratch117/sciops/team117/hpag/fg6/analysis/Devel/mouse/bothhic_fromscratch/bwa_temp/hicana/more/map_n_reads.txt'
+    #myfile='/lustre/scratch117/sciops/team117/hpag/fg6/analysis/Devel/mouse/bothhic/bwa_temp/hicana/map_n_reads.txt'
+    X, target, Z, df = get_data(myfile)
     size=len(target)
 
 if resize:  
-    test_perc=0.2
+    test_perc=0.8
     X_train, X_test, y_train, y_test = train_test_split(X, target, random_state=1, test_size = test_perc)
     Z1=Z.reshape(-1, 1) 
     Z_train, Z_test, y_train, y_test = train_test_split(Z1, target, random_state=1, test_size = test_perc)
@@ -92,7 +108,9 @@ if resize:
 ### Print and Plot some Infos ###
 
 if info:
+    print("\n Some info from the sample:")
     plottami(X, target, Z)
+    print("\n")
 
 
 
