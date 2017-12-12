@@ -211,10 +211,11 @@ int read_draftals(char* file){
         ss >> read >> flag >> scaffold >> pos 
 	   >> mapq >> cigar >> mate >> mate_pos >> insert;
 	
-	readnum++;
+	readnum++;  // read num (not read-pairs)
 
-	if( samescaff_map.count(read) ) continue;
-	if( !samechr_map.count(read) ) {
+	if( samescaff_map.count(read) ) continue; // read pair already accounted for
+
+	if( !samechr_map.count(read) ) {  // read not found in ref
 	  not_found_in_chr++;
 	  continue;
 	}
@@ -283,10 +284,11 @@ int read_draftals(char* file){
 
 
   cout << " Mapping done, I found: " 
-       << readnum << " reads, " << not_found_in_chr << " reads which were not mapped to the Ref, \n"
-       << "  " << schrnum << " mapping to the same chromosome (" <<  schrnum*100./readnum <<  "%) \n"
-       << "  " << sscaffnum << " mapped to the same scaffold (" <<  sscaffnum*100./readnum <<  "%) \n"
-       << "  " << same_chr_diff_scaff << " mapped to same chr but different scaffolds (" <<  same_chr_diff_scaff*100./readnum <<  "%)"
+       << readnum << " reads, " 
+       << not_found_in_chr << " read-pairs which were not mapped to the Ref (at least one)" <<  not_found_in_chr*100./(readnum/2) <<  "%) \n"
+       << "  " << schrnum << " read-pairs mapping to the same chromosome (" <<  schrnum*100./(readnum/2) <<  "%) \n"
+       << "  " << sscaffnum << " read-pairs mapped to the same scaffold (" <<  sscaffnum*100./(readnum/2) <<  "%) \n"
+       << "  " << same_chr_diff_scaff << " read-pairs mapped to same chr but different scaffolds (" <<  same_chr_diff_scaff*100./readnum <<  "%)"
        << endl;
 }
 
